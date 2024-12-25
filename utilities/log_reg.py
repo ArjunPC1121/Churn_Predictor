@@ -47,13 +47,13 @@ def calculateChurn(age, bal, binary_active, prod, gender_Male):
     joblib.dump(scaler, 'scaler.pkl')
 
     # Model evaluation
-    '''probs = lr.predict_proba(x_test)[:, 1]
+    probs = lr.predict_proba(x_test)[:, 1]
     print("Model Evaluation:")
     print(f"ROC-AUC Score: {roc_auc_score(y_test, probs):.2f}")
     print(f"Accuracy: {accuracy_score(y_test, lr.predict(x_test)):.2f}")
     print(f"F1-Score: {f1_score(y_test, lr.predict(x_test)):.2f}")
 
-    # Display predicted probabilities for the first 10 test cases
+    '''# Display predicted probabilities for the first 10 test cases
     print("Predicted Probabilities for the first 10 customers in the test set:")
     for i, prob in enumerate(probs[:10]):
         print(f"Customer {i+1}: {prob:.2f}")'''
@@ -64,11 +64,11 @@ def calculateChurn(age, bal, binary_active, prod, gender_Male):
     bal = float(input("Enter Balance:"))
     active = input("Is the customer active? (yes/no):").strip().lower()
     prod = int(input("Enter Number of products:"))
-    gender = input("Enter Gender (male/female):").strip().lower()'''
+    gender = input("Enter Gender (male/female):").strip().lower()
 
-    # Converting input to required form
-    '''binary_active = 1 if active == 'yes' else 0
-    gender_Male = 1 if gender == 'male' else 0'''
+     Converting input to required form
+    binary_active = 1 if active == 'yes' else 0
+    gender_Male = 1 if gender == 'male' else 0
 
     # Creating input vector based on selected features
     l = [[age, bal, binary_active, prod, gender_Male]]
@@ -81,4 +81,6 @@ def calculateChurn(age, bal, binary_active, prod, gender_Male):
 
     # Displaying the prediction
     #print(f"\nThe probability of churn for the given customer is: {res[0] * 100:.2f}%")
-    return res
+    return res'''
+    
+calculateChurn(25,765898,1,2,1)
