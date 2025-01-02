@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 import joblib
 import os
 from flask_cors import CORS
+#flask --app app run --debug to run
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -47,6 +48,8 @@ def churn():
             churn = calculateChurn_LogReg(age, balance, binary_active, num_products, gender_male)
         elif model=="Random Forest":
             churn = calculateChurn_RF(age, balance, binary_active, num_products, gender_male)
+        elif model == "Extreme Gradient Boosting":
+            churn = calculateChurn_XGB(age, balance, binary_active, num_products, gender_male)
         churn_val=churn
         # Render result template
         return render_template("churn.html", churn=f"{churn:.2f}")
@@ -55,14 +58,14 @@ def churn():
 
 @app.route("/recommendations")
 def recommendations():
-    if(churn_val<25.0):
-        return render_template("recomm.html",recomm="Recommendation X")
-    elif(churn_val<50.0):
-        return render_template("recomm.html",recomm="Recommendation Y")
-    elif(churn_val<75.0):
-        return render_template("recomm.html",recomm="Recommendation Z")
+    if churn_val < 25.0:
+        return render_template("recomm.html", recomm="Send a thank-you email.")
+    elif churn_val < 50.0:
+        return render_template("recomm.html", recomm="Send a discount coupon.")
+    elif churn_val < 75.0:
+        return render_template("recomm.html", recomm="Call the customer to check in.")
     else:
-        return render_template("recomm.html",recomm="Recommendation W")
+        return render_template("recomm.html", recomm="Provide free support for an issue.")
 
 def calculateChurn_LogReg(age, bal, binary_active, prod, gender_Male):
     # Ensure the dataset exists
@@ -131,6 +134,39 @@ def calculateChurn_RF(age, bal, binary_active, prod, gender_Male):
     return res[0] * 100  # Churn probability as a percentage
 
 
+def calculateChurn_XGB(age, bal, binary_active, prod, gender_Male):
+    # Ensure the dataset exists
+    if not os.path.exists("Modified_Churn_Modelling.csv"):
+        raise FileNotFoundError("Churn dataset not found.")
+    
+    # Load the dataset
+    df = pd.read_csv("Modified_Churn_Modelling.csv")
+
+    # x includes all columns except 'Exited'
+    x = df.drop(columns=['Exited'])
+    y = df['Exited']
+
+    # One-hot Encoding
+    x = pd.get_dummies(x, drop_first=True)
+
+    # Drop location-based features before feature selection
+    x = x.drop(columns=[col for col in x.columns if 'Geography_' in col])
+
+    # Load the trained XGBoost model and scaler
+    xgb = joblib.load('xgboost_model.pkl')
+    scaler_xgb = joblib.load('scaler_xgb.pkl')
+
+    # Create the input vector based on selected features
+    l = [[age, bal, binary_active, prod, gender_Male]]
+    
+    # Scaling the input data based on the scaler used in training
+    l_scaled = scaler_xgb.transform(l)
+
+    # Predicting probability of churn
+    res = xgb.predict_proba(l_scaled)[:, 1]  # Probability of churning
+
+    # Returning the churn probability as a percentage
+    return res[0] * 100  # Churn probability as a percentage
 
 if __name__ == '__main__':
     app.run(debug=True)
